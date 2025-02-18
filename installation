@@ -592,6 +592,17 @@ Successfully installed relion
 >relion &
 relion gui starts
 
+# Post run issues
+* Topaz fails
+Clear up build folder
+Make torch_home folder
+
+>cmake -DCUDA_ARCH=86 -DPYTHON_EXE_PATH=/home/rkarim/miniforge3/envs/relion-5.0/bin/python -FLTK_INCLUDE_DIR=/home/rkarim/miniforge3/pkgs/fltk-1.3.10-hff38c0f_0/include/ -FLTK_LIBRARIES=/home/rkarim/miniforge3/pkgs/fltk-1.3.10-hff38c0f_0/lib/ ..
+succeed without python error
+>make -j 8
+completed without error
+>
+
 
 
 
