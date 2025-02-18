@@ -83,6 +83,14 @@ which is generally one of the challenging aspects of using MPI.
 The file ORIG**.txt is a backup of the original hostfile
 
 # Validates installation
+>mkdir /home/mpitest
+>cd /home/mpitest
 >wget https://lsi2.ugr.es/jmantas/ppr/tutoriales/codigos/mpi/holamundo2.cpp -O 1_HolaMundo.cpp
 >mpiCC 1_HolaMundo.cpp -o holaMundo
 >mpirun -np 4 holaMundo
+¡Hola Mundo desde el proceso 2 de 4 que somos!
+¡Hola Mundo desde el proceso 3 de 4 que somos!
+¡Hola Mundo desde el proceso 0 de 4 que somos!
+¡Hola Mundo desde el proceso 1 de 4 que somos!
+
+
