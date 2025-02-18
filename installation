@@ -412,7 +412,181 @@ Running apps/CMakeLists.txt...
 >git pull
 >make
 
-* 
+* pytorch dependency error
+>cd ..
+>conda env update -f environment.yml
+>conda deactivate
+>conda update -n base -c conda-forge conda
+>conda env update -f environment.yml
+>conda env update -f environment.yml --prune
+
+* checked pytorch version for python under conda and coda 11.8 system
+* make configuration again
+>rm -r *
+>cmake ..
+>make -j 8
+
+* error log
+[  2%] Performing install step for 'OWN_FLTK'
+=== installing FL ===
+make[4]: warning: -j8 forced in submake: resetting jobserver mode.
+Installing include files in /mnt/c/Linux_folder/relion/relion/external/fltk/include...
+=== installing src ===
+make[4]: warning: -j8 forced in submake: resetting jobserver mode.
+Installing libraries in /mnt/c/Linux_folder/relion/relion/external/fltk/lib...
+=== installing fluid ===
+make[4]: warning: -j8 forced in submake: resetting jobserver mode.
+Installing FLUID in /mnt/c/Linux_folder/relion/relion/external/fltk/bin...
+=== installing test ===
+make[4]: warning: -j8 forced in submake: resetting jobserver mode.
+Makefile:278: warning: ignoring prerequisites on suffix rule definition
+Makefile:278: warning: ignoring prerequisites on suffix rule definition
+Makefile:278: warning: ignoring prerequisites on suffix rule definition
+Installing example programs to /mnt/c/Linux_folder/relion/relion/external/fltk/share/doc/fltk/examples...
+=== installing documentation ===
+make[4]: warning: -j8 forced in submake: resetting jobserver mode.
+Installing documentation files in /mnt/c/Linux_folder/relion/relion/external/fltk/share/doc/fltk ...
+Installing man pages in /mnt/c/Linux_folder/relion/relion/external/fltk/share/man ...
+[  2%] Completed 'OWN_FLTK'
+[  2%] Built target OWN_FLTK
+make: *** [Makefile:136: all] Error 2
+
+# FLTK library installation using conda (the process above did not work)
+>conda install conda-forge::fltk
+verify
+>conda list fltk
+# packages in environment at /home/rkarim/miniforge3:
+#
+# Name                    Version                   Build  Channel
+fltk                      1.3.10               hff38c0f_0    conda-forge
+
+* Update conda environment as new module is just installed
+>conda env update -f environment.yml
+>conda deactivate
+
+* make configuration again
+>rm -r *
+>cmake ..
+success
+>make -j 8
+# Further error
+[  1%] Building NVCC (Device) object src/apps/CMakeFiles/relion_jaz_gpu_util.dir/__/jaz/cuda/relion_jaz_gpu_util_generated_test00.cu.o
+In file included from /usr/local/cuda-11.8/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/local/cuda-11.8/include/crt/host_config.h:132:2: error: #error -- unsupported GNU version! gcc versions later than 11 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  132 | #error -- unsupported GNU version! gcc versions later than 11 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+[  1%] Built target copy_scripts
+CMake Error at relion_jaz_gpu_util_generated_test00.cu.o.Release.cmake:220 (message):
+  Error generating
+  /mnt/c/Linux_folder/relion/relion/build/src/apps/CMakeFiles/relion_jaz_gpu_util.dir/__/jaz/cuda/./relion_jaz_gpu_util_generated_test00.cu.o
+
+make[2]: *** [src/apps/CMakeFiles/relion_jaz_gpu_util.dir/build.make:77: src/apps/CMakeFiles/relion_jaz_gpu_util.dir/__/jaz/cuda/relion_jaz_gpu_util_generated_test00.cu.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:415: src/apps/CMakeFiles/relion_jaz_gpu_util.dir/all] Error 2
+make: *** [Makefile:136: all] Error 2
+
+* Two issues: my gcc version 13 but cuda 11.8 needs gcc <=11 ; GPU utilities also has some error (probably gpu computability configuration will help)
+
+# Install gcc older version
+First, add the ubuntu-toolchain-r/test PPA to your system with:
+>sudo apt install software-properties-common
+>sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+Install the desired GCC and G++ versions=9 by
+>sudo apt install gcc-9 g++-9
+Now, configure alternative for each version and associate a priority with it. The default version is the one with the highest priority, in our case that is gcc-9
+>sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9 --slave /usr/bin/gcov gcov /usr/bin/gcov-9
+log output:
+update-alternatives: using /usr/bin/gcc-9 to provide /usr/bin/gcc (gcc) in auto mode
+>sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 --slave /usr/bin/g++ g++ /usr/bin/g++-13 --slave /usr/bin/gcov gcov /usr/bin/gcov-13
+log output:
+update-alternatives: using /usr/bin/gcc-13 to provide /usr/bin/gcc (gcc) in auto mode
+Later if you want to change the default version use the update-alternatives command:
+>sudo update-alternatives --config gcc
+
+# Re-run with compatible gcc & gpu architechture value
+>cmake -DCUDA_ARCH=86 ..
+* log output with some minor issues (appears to be from older gcc 9 invoked!)
+CMake Warning at src/apps/CMakeLists.txt:436 (add_executable):
+  Cannot generate a safe runtime search path for target display because files
+  in some directories may conflict with libraries in implicit directories:
+
+    runtime library [libSM.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libICE.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libX11.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libXext.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libpng16.so.16] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libjpeg.so.8] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+
+  Some of these libraries may not be found correctly.
+
+
+CMake Warning at src/apps/CMakeLists.txt:434 (add_executable):
+  Cannot generate a safe runtime search path for target relion because files
+  in some directories may conflict with libraries in implicit directories:
+
+    runtime library [libSM.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libICE.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libX11.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libXext.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libpng16.so.16] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libjpeg.so.8] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+
+  Some of these libraries may not be found correctly.
+
+
+CMake Warning at src/apps/CMakeLists.txt:436 (add_executable):
+  Cannot generate a safe runtime search path for target manualpick because
+  files in some directories may conflict with libraries in implicit
+  directories:
+
+    runtime library [libSM.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libICE.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libX11.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libXext.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libpng16.so.16] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+    runtime library [libjpeg.so.8] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/rkarim/miniforge3/lib
+
+  Some of these libraries may not be found correctly.
+
+
+-- Generating done (6.2s)
+-- Build files have been written to: /mnt/c/Linux_folder/relion/relion/build
+
+# restart the system
+>exit
+powershell
+>wsl --shutdown
+Log back to wsl and into relion folder, check that relion-5.0 env is not active & update conda env
+>conda info --envs
+>conda env update -f environment.yml
+Activate gcc 9
+>sudo update-alternatives --config gcc
+>cmake -DCUDA_ARCH=86 ..
+* Error outputs form conda library path
+>conda deactivate
+>cmake -DCUDA_ARCH=86 ..
+Succcess !!
+>make -j 8
+Success!!
+
 
 
 
