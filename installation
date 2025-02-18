@@ -588,7 +588,9 @@ Succcess !!
 Success!!
 >conda deactivate
 >make install
-
+Successfully installed relion
+>relion &
+relion gui starts
 
 
 
