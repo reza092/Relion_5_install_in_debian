@@ -586,7 +586,8 @@ Activate gcc 9
 Succcess !!
 >make -j 8
 Success!!
-
+>conda deactivate
+>make install
 
 
 
