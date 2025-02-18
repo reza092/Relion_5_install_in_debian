@@ -1,0 +1,88 @@
+#!/bin/bash
+
+### steps ###
+# verify the system has cmake, make, gcc installed and updated
+# verify the system has cuda-capable gpu
+# verify that cmake is installed and compatible
+# critically resolve the issues going through the cmake logs
+# important libraries are: MPI library, CUDA SDK, FFTW and FLTK
+
+# verify the system has cmake, make, gcc installed and updated
+> make --v
+GNU Make 4.3
+> gcc --version
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+> cmake --v
+cmake is not installed, install cmake latest using snap
+>snap install cmake --classic
+cmake 3.31.5 from Crascit✓ installe
+
+# verify the system has cuda-capable gpu
+>nvidia-smi
+#log
+Mon Feb 17 14:55:21 2025
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 570.86.16              Driver Version: 572.16         CUDA Version: 12.8     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3060 Ti     On  |   00000000:04:00.0 Off |                  N/A |
+|  0%   34C    P8             11W /  200W |      15MiB /   8192MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A              31      G   /Xwayland                             N/A      |
++-----------------------------------------------------------------------------------------+
+# check cuda runtime/compiler version is 11.8
+>nvcc -V
+# Log
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2022 NVIDIA Corporation
+Built on Wed_Sep_21_10:33:58_PDT_2022
+Cuda compilation tools, release 11.8, V11.8.89
+Build cuda_11.8.r11.8/compiler.31833905_0
+
+# verify open mpi is installed
+>ompi_info
+# install open MPI
+>sudo apt-get update && sudo apt-get upgrade
+>sudo apt autoclean && sudo apt autoremove
+# Install ssh server and client with commands:
+>sudo apt-get install openssh-server && sudo apt-get install openssh-client
+# Install net-tools for cheking ip address (with command:ifconfig)
+>sudo apt-get install net-tools
+>ifconfig
+# open mpi
+>sudo apt-get install libopenmpi-dev
+>sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev libgtk2.0-dev
+>sudo apt-get install librdmacm-dev libpsm2-dev
+# check mpi installation and version
+>source ~/.bashrc
+>mpirun --version
+mpirun (Open MPI) 4.1.6
+
+# modify hostfile, which OpenMPI uses to determine which hosts (computers) are available to run MPI processes. 
+the file is in the /etc/ location
+>ll /etc/openmpi/openmpi-default-hostfile
+>cd /etc/openmpi/
+You can use the following commands to configure hostfile.txt for local development:
+>mv openmpi-default-hostfile ORIGopenmpi-default-hostfile.txt
+>echo "localhost slots=4 max-slots=4" >openmpi-default-hostfile
+This will allow you to run your MPI programs with up to 4 processes.
+Depending on your CPU and (if relevant) how you’ve configured your virtual machine software, 
+the degree of parallelism you’ll see could vary. However, even without real parallelism, 
+you will be able to test your program to see if the communication between processes works correctly, 
+which is generally one of the challenging aspects of using MPI.
+The file ORIG**.txt is a backup of the original hostfile
+
+# Validates installation
+>wget https://lsi2.ugr.es/jmantas/ppr/tutoriales/codigos/mpi/holamundo2.cpp -O 1_HolaMundo.cpp
+>mpiCC 1_HolaMundo.cpp -o holaMundo
+>mpirun -np 4 holaMundo
