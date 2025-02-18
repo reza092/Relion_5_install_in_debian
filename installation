@@ -126,9 +126,17 @@ create links for the libTIFF package
 * Install the suggested packages from the log
 >sudo apt install cmake-doc cmake-format elpa-cmake-mode ninja-build lrzip libfftw3-doc
 
-# Install conda by installing miniforge
-Download miniforge linux version from https://conda-forge.org/download/ and cd to that dir
+# Install conda by installing miniforge 
+* Download miniforge linux version from https://conda-forge.org/download/ and cd to that dir
 >bash Miniforge..
+>source ~/.bashrc
+* check conda version
+>conda --version
+* check conda directory
+>which conda
+
+* Initialization can be done by calling conda with its full path, with something like (ref:https://github.com/conda-forge/miniforge)
+>~/miniforge3/bin/conda init
 * Activate the env
 >micromamba activate /home/rkarim/miniforge3
 * If you'd prefer that conda's base environment not be activated on startup, run the following command when conda is activated:
@@ -141,7 +149,271 @@ Download miniforge linux version from https://conda-forge.org/download/ and cd t
 >cd relion
 >git checkout ver5.0
 >git pull
->
+
+* Set up conda env
+Once you have conda setup, you can install all the RELION Python dependencies into a new environment by running:
+>conda env create -f environment.yml
+build dir was already there
+>cd build
+>cmake ..
+
+# cmake configuration log
+CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+  Compatibility with CMake < 3.5 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value or use a ...<max> suffix to tell
+  CMake that the project does not need compatibility with older versions.
+
+
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- BUILD TYPE set to the default type:  'Release'
+-- Setting fallback CUDA_ARCH=50
+-- CUDA enabled - Building CUDA-accelerated version of RELION
+-- Setting cpu precision to double
+-- Setting accelerated code precision to single
+CMake Warning (dev) at CMakeLists.txt:192 (FIND_PACKAGE):
+  Policy CMP0146 is not set: The FindCUDA module is removed.  Run "cmake
+  --help-policy CMP0146" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found CUDA: /usr/local/cuda-11.8 (found version "11.8")
+-- Using cuda wrapper to compile....
+-- Cuda version is >= 7.5 and single-precision build, enable double usage warning.
+-- Found MPI_C: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so (found version "3.1")
+-- Found MPI_CXX: /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so (found version "3.1")
+-- Found MPI: TRUE (found version "3.1")
+-- MPI_INCLUDE_PATH : /usr/lib/x86_64-linux-gnu/openmpi/include;/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi
+-- MPI_LIBRARIES : /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so
+-- MPI_CXX_INCLUDE_PATH : /usr/lib/x86_64-linux-gnu/openmpi/include;/usr/lib/x86_64-linux-gnu/openmpi/include/openmpi
+-- MPI_CXX_LIBRARIES : /usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi_cxx.so;/usr/lib/x86_64-linux-gnu/openmpi/lib/libmpi.so
+-- CMAKE_C_COMPILER : /usr/bin/cc
+-- CMAKE_CXX_COMPILER : /usr/bin/c++
+-- MPI_C_COMPILER : /usr/bin/mpicc
+-- MPI_CXX_COMPILER : /usr/bin/mpicxx
+-- Found OpenMP_C: -fopenmp (found version "4.5")
+-- Found OpenMP_CXX: -fopenmp (found version "4.5")
+-- Found OpenMP: TRUE (found version "4.5")
+-- CMAKE_CXX_COMPILER_ID : GNU
+-- Found X11: /usr/include
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Could NOT find FLTK (missing: FLTK_LIBRARIES FLTK_INCLUDE_DIR)
+-- No FLTK installation was found
+-- --------------------------------------------------------
+-- -------- NO EXISTING FLTK LIBRARIES WHERE FOUND. -------
+-- -------------- FLTK WILL BE DOWNLOADED AND -------------
+-- --------------- BUILT DURING COMPILE-TIME. -------------
+-- --------------------------------------------------------
+-- ---- A WORKING INTERNET CONNECTION WILL BE REQUIRED. ---
+-- --------------------------------------------------------
+-- no previous fltk found, the following paths are set for libs/headers TO BE built
+CMake Warning (dev) at /usr/share/cmake-3.28/Modules/ExternalProject.cmake:3195 (message):
+  The DOWNLOAD_EXTRACT_TIMESTAMP option was not given and policy CMP0135 is
+  not set.  The policy's OLD behavior will be used.  When using a URL
+  download, the timestamps of extracted files should preferably be that of
+  the time of extraction, otherwise code that depends on the extracted
+  contents might not be rebuilt if the URL changes.  The OLD behavior
+  preserves the timestamps from the archive instead, but this is usually not
+  what you want.  Update your project to the NEW behavior or specify the
+  DOWNLOAD_EXTRACT_TIMESTAMP option with a value of true to avoid this
+  robustness issue.
+Call Stack (most recent call first):
+  /usr/share/cmake-3.28/Modules/ExternalProject.cmake:4418 (_ep_add_download_command)
+  cmake/BuildFLTK.cmake:47 (externalproject_add)
+  CMakeLists.txt:474 (include)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- FLTK_INCLUDE_DIR: /mnt/c/Linux_folder/relion/relion/external/fltk/include
+-- FLTK_LIBRARIES:   /mnt/c/Linux_folder/relion/relion/external/fltk/lib/libfltk.so
+-- Found FFTW
+-- FFTW_PATH: /usr/include
+-- FFTW_INCLUDES: /usr/include
+-- FFTW_LIBRARIES: /usr/lib/x86_64-linux-gnu/libfftw3f.so;/usr/lib/x86_64-linux-gnu/libfftw3.so
+-- Looking for sincos
+-- Looking for sincos - found
+-- Looking for __sincos
+-- Looking for __sincos - not found
+-- Found TIFF: /usr/local/lib/libtiff.so (found version "4.0.10")
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.3")
+-- Found PNG: /usr/lib/x86_64-linux-gnu/libpng.so (found version "1.6.43")
+-- Found JPEG: /usr/lib/x86_64-linux-gnu/libjpeg.so (found version "80")
+-- Will try to find Conda environment (name: relion-5.0) and its Python executable...
+-- Found Conda executable: /home/rkarim/miniforge3/condabin/conda
+-- Found Conda environment (name: relion-5.0) and its Python executable.
+-- Using Python executable: /home/rkarim/miniforge3/envs/relion-5.0/bin/python
+-- Will try to find Torch home directory...
+CMake Warning at cmake/FindCondaPython.cmake:102 (message):
+  Could NOT find Torch home directory for Conda environment (name:
+  relion-5.0).
+
+  You can specify it directly with -DTORCH_HOME_PATH=<path>
+
+Call Stack (most recent call first):
+  CMakeLists.txt:545 (include)
+
+
+-- Using Torch home:
+-- Will attempts to download model weights for dependent packages...
+NOTE: You can skip this step by setting -DFETCH_WEIGHTS=OFF
+Attempting to download weights for class ranker...
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/relion_classranker/command_line.py", line 101, in main
+    model, model_path = install_and_load_model(
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/relion_classranker/command_line.py", line 53, in install_and_load_model
+    torch.hub.download_url_to_file(model_list[name][0], model_path_gz, hash_prefix=model_list[name][1])
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/torch/hub.py", line 611, in download_url_to_file
+    u = urlopen(req)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 525, in open
+    response = meth(req, response)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 634, in http_response
+    response = self.parent.error(
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 563, in error
+    return self._call_chain(*args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 643, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 503: Service Unavailable
+Installing Classranker model (v1.0)...
+
+---------------------------------- PYTHON ERROR ---------------------------------
+   Has RELION been provided a Python interpreter with the correct environment?
+   The interpreter can be passed to RELION either during Cmake configuration by
+     using the Cmake flag -DPYTHON_EXE_PATH=<path/to/python/interpreter>.
+   NOTE: For some modules TORCH_HOME needs to be set to find pretrained models
+---------------------------------------------------------------------------------
+
+  Using python executable: /home/rkarim/miniforge3/envs/relion-5.0/bin/python
+
+Attempting to download weights for Blush...
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/relion_blush/command_line.py", line 276, in main
+    model, model_path = install_and_load_model(
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/relion_blush/util.py", line 822, in install_and_load_model
+    torch.hub.download_url_to_file(source_url, model_path_gz, hash_prefix=model_list[name][1])
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/torch/hub.py", line 611, in download_url_to_file
+    u = urlopen(req)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 525, in open
+    response = meth(req, response)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 634, in http_response
+    response = self.parent.error(
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 563, in error
+    return self._call_chain(*args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 643, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 503: Service Unavailable
+Installing Blush model (v1.0)...
+Downloading model weights from:
+   https://zenodo.org/records/10072731/files/blush_v1.0.ckpt.gz
+
+---------------------------------- PYTHON ERROR ---------------------------------
+   Has RELION been provided a Python interpreter with the correct environment?
+   The interpreter can be passed to RELION either during Cmake configuration by
+     using the Cmake flag -DPYTHON_EXE_PATH=<path/to/python/interpreter>.
+   NOTE: For some modules TORCH_HOME needs to be set to find pretrained models
+---------------------------------------------------------------------------------
+
+  Using python executable: /home/rkarim/miniforge3/envs/relion-5.0/bin/python
+
+Attempting to download weights for ModelAngelo...
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/model_angelo/__main__.py", line 58, in main
+    args.func(args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/model_angelo/utils/setup_weights.py", line 28, in main
+    model_dst = download_and_install_model(parsed_args.bundle_name)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/model_angelo/utils/torch_utils.py", line 456, in download_and_install_model
+    torch.hub.download_url_to_file(bundle_name_to_link[bundle_name], dest + ".zip")
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/site-packages/torch/hub.py", line 611, in download_url_to_file
+    u = urlopen(req)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 525, in open
+    response = meth(req, response)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 634, in http_response
+    response = self.parent.error(
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 563, in error
+    return self._call_chain(*args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/home/rkarim/miniforge3/envs/relion-5.0/lib/python3.10/urllib/request.py", line 643, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 503: Service Unavailable
+Please make sure you have set the environment variable TORCH_HOME
+to a suitable directory, visible to all relevant users!
+Setting up bundle with name: nucleotides for the first time.
+
+---------------------------------- PYTHON ERROR ---------------------------------
+   Has RELION been provided a Python interpreter with the correct environment?
+   The interpreter can be passed to RELION either during Cmake configuration by
+     using the Cmake flag -DPYTHON_EXE_PATH=<path/to/python/interpreter>.
+   NOTE: For some modules TORCH_HOME needs to be set to find pretrained models
+---------------------------------------------------------------------------------
+
+  Using python executable: /home/rkarim/miniforge3/envs/relion-5.0/bin/python
+
+One or more download tasks failed. See above error messages.
+CMake Warning at CMakeLists.txt:590 (message):
+  Failed to download model weights.  YOU CAN IGNORE THIS.  The downloads will
+  be attempted again when the model weights are required later.
+
+  NOTE: You can skip this step by setting -DFETCH_WEIGHTS=OFF
+
+
+-- Building static libs (larger build size and binaries)
+Running apps/CMakeLists.txt...
+-- CMAKE_BINARY_DIR:/mnt/c/Linux_folder/relion/relion/build
+-- Git commit ID: e62d3ba8b14e9f6f146435e9b74410f698223134
+-- CMAKE_C_FLAGS : -std=c99  -fopenmp
+-- CMAKE_CXX_FLAGS : -fPIC -std=c++14  -fopenmp
+-- Configuring done (27.9s)
+-- Generating done (6.9s)
+-- Build files have been written to: /mnt/c/Linux_folder/relion/relion/build
+
+# Addressing the errors or package needs
+* fltk package
+>git clone https://github.com/fltk/fltk.git
+>cd fltk
+>git pull
+>make
+
+* 
+
 
 
 
