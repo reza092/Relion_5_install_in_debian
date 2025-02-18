@@ -15,7 +15,7 @@ gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
 > cmake --v
 cmake is not installed, install cmake latest using snap
 >snap install cmake --classic
-cmake 3.31.5 from Crascit✓ installe
+cmake 3.31.5 from Crascit✓ installed
 
 # verify the system has cuda-capable gpu
 >nvidia-smi
@@ -92,5 +92,59 @@ The file ORIG**.txt is a backup of the original hostfile
 ¡Hola Mundo desde el proceso 3 de 4 que somos!
 ¡Hola Mundo desde el proceso 0 de 4 que somos!
 ¡Hola Mundo desde el proceso 1 de 4 que somos!
+
+# install accessories packages
+* ghostscript
+>apt-get install ghostscript
+* libtiff (assuming g++ already available in the system)
+* Install the libraries libTIFF relies upon
+>sudo apt-get install libjpeg-dev liblzma-dev liblz-dev zlib1g-dev
+* Next, create a installation folder and download the latest version of libTIFF
+>mkdir installation_directory
+>wget http://download.osgeo.org/libtiff/tiff-4.0.10.tar.gz
+>tar -zxvf tiff-4.0.10.tar.gz
+>cd tiff-4.0.10
+>./configure
+>make
+* install libTIFF
+>sudo make install
+create links for the libTIFF package
+>sudo ldconfig
+* verify libTIFF
+>tiffinfo
+
+* Get libpng (in case of download fails, go to http://downloads.sourceforge.net/libpng/ to get updated download link)
+>wget http://prdownloads.sourceforge.net/libpng/libpng-1.6.46.tar.gz
+>tar -xvf libpng-1.6.46.tar.gz
+>cd libpng-1.6.46/
+>./configure --prefix=/usr/local/libpng
+>make
+>sudo make install
+
+* Install all the packages using relion's manual instruction & keep track of suggested packages in the log
+>sudo apt install cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev libpng-dev ghostscript libxft-dev
+* Install the suggested packages from the log
+>sudo apt install cmake-doc cmake-format elpa-cmake-mode ninja-build lrzip libfftw3-doc
+
+# Install conda by installing miniforge
+Download miniforge linux version from https://conda-forge.org/download/ and cd to that dir
+>bash Miniforge..
+* Activate the env
+>micromamba activate /home/rkarim/miniforge3
+* If you'd prefer that conda's base environment not be activated on startup, run the following command when conda is activated:
+>conda config --set auto_activate_base false
+* Deactivate the env run
+>micromamba deactivate /home/rkarim/miniforge3
+
+# Download and install relion
+>git clone https://github.com/3dem/relion.git
+>cd relion
+>git checkout ver5.0
+>git pull
+>
+
+
+
+
 
 
