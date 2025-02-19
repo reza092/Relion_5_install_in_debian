@@ -622,8 +622,25 @@ completed without error
 >conda deactivate
 >sudo make install
 
+# Run issues
+* Error with autopick topaz
+Could not load library libcudnn_cnn_infer.so.8. Error: libcuda.so: cannot open shared object file: No such file or directory
+/usr/local/bin/relion_python_topaz: line 30: 61810 Aborted                 (core dumped) "$python_executable" -c "import re, sys; from topaz.main import main; sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0]); sys.exit(main())" "$@"
 
+---------------------------------- PYTHON ERROR ---------------------------------
+   Has RELION been provided a Python interpreter with the correct environment?
+   The interpreter can be passed to RELION either during Cmake configuration by
+     using the Cmake flag -DPYTHON_EXE_PATH=<path/to/python/interpreter>.
+---------------------------------------------------------------------------------
 
+  Using python executable: /home/rkarim/miniforge3/envs/relion-5.0/bin/python
 
+* solution: problem with WSL2 ubuntu 24.04.
+It is just a matter to add the lib path in the .bashrc:
+export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$LD_LIBRARY_PATH
+Be sure that your library is in /usr/lib/wsl/lib, to see it you can run
+>ldconfig -p | grep cuda
 
+* relion exits due to not in use for 3600 seconds
+>relion --idle 9999999
 
