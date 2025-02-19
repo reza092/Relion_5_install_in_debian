@@ -595,7 +595,7 @@ relion gui starts
 # Post run issues
 * Topaz fails
 Clear up build folder
-Make torch_home folder
+Make torch_home folder under relion, outside of the 
 
 >cmake -DCUDA_ARCH=86 -DPYTHON_EXE_PATH=/home/rkarim/miniforge3/envs/relion-5.0/bin/python \
 -DTORCH_HOME_PATH=/mnt/c/Linux_folder/relion/relion/pytorch ..
@@ -611,10 +611,16 @@ fltk                      1.3.10               hff38c0f_0    conda-forge
 
 # Retry
 >conda deactivate
-
+>>cmake -DCUDA_ARCH=86 -DPYTHON_EXE_PATH=/home/rkarim/miniforge3/envs/relion-5.0/bin/python \
+-DTORCH_HOME_PATH=/mnt/c/Linux_folder/relion/relion/pytorch ..
+* Issue: taking downloan a long time, perhaps folder is inside the relion. Take it outside & model angelo weight model switched off
+>cmake -DCUDA_ARCH=86 -DPYTHON_EXE_PATH=/home/rkarim/miniforge3/envs/relion-5.0/bin/python \
+-DTORCH_HOME_PATH=/mnt/c/Linux_folder/pytorch -DFETCH_WEIGHTS=OFF ..
+Successfully completed
 >make -j 8
 completed without error
->
+>conda deactivate
+>sudo make install
 
 
 
