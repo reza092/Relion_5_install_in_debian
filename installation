@@ -6,6 +6,9 @@
 # verify that cmake is installed and compatible
 # critically resolve the issues going through the cmake logs
 # important libraries are: MPI library, CUDA SDK, FFTW and FLTK
+# build the source
+# install
+# Resolve issues
 
 # verify the system has cmake, make, gcc installed and updated
 > make --v
