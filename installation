@@ -15,7 +15,7 @@
 GNU Make 4.3
 > gcc --version
 gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
-> cmake --v
+> cmake --version
 cmake is not installed, install cmake latest using snap
 >snap install cmake --classic
 cmake 3.31.5 from Crascit✓ installed
@@ -62,7 +62,17 @@ Build cuda_11.8.r11.8/compiler.31833905_0
 # Install net-tools for cheking ip address (with command:ifconfig)
 >sudo apt-get install net-tools
 >ifconfig
-# open mpi
+
+# open mpi 
+** (if you want to install openmpi latest version and build it from source follow here https://webpages.charlotte.edu/abw/coit-grid01.uncc.edu/ParallelProgSoftware/Software/OpenMPIInstall.pdf 
+** & for cuda aware MPI configure accordingly)
+# Configure and build Open MPI >= 2.0.0 with UCX
+# We recommend UCX1.4 built with gdrcopy for the most updated set of MPI features and for better performance.
+# Configure and build UCX to provide CUDA support
+>./configure --prefix=/path/to/ucx-cuda-install --with-cuda=/usr/local/cuda
+>
+
+** using debian repository follow this
 >sudo apt-get install libopenmpi-dev
 >sudo apt-get install openmpi-bin openmpi-common libopenmpi-dev libgtk2.0-dev
 >sudo apt-get install librdmacm-dev libpsm2-dev
@@ -98,7 +108,7 @@ The file ORIG**.txt is a backup of the original hostfile
 
 # install accessories packages
 * ghostscript
->apt-get install ghostscript
+>sudo apt-get install ghostscript
 * libtiff (assuming g++ already available in the system)
 * Install the libraries libTIFF relies upon
 >sudo apt-get install libjpeg-dev liblzma-dev liblz-dev zlib1g-dev
@@ -117,12 +127,7 @@ create links for the libTIFF package
 >tiffinfo
 
 * Get libpng (in case of download fails, go to http://downloads.sourceforge.net/libpng/ to get updated download link)
->wget http://prdownloads.sourceforge.net/libpng/libpng-1.6.46.tar.gz
->tar -xvf libpng-1.6.46.tar.gz
->cd libpng-1.6.46/
->./configure --prefix=/usr/local/libpng
->make
->sudo make install
+>sudo apt install libpng-dev
 
 * Install all the packages using relion's manual instruction & keep track of suggested packages in the log
 >sudo apt install cmake git build-essential mpi-default-bin mpi-default-dev libfftw3-dev libtiff-dev libpng-dev ghostscript libxft-dev
@@ -157,6 +162,8 @@ create links for the libTIFF package
 Once you have conda setup, you can install all the RELION Python dependencies into a new environment by running:
 >conda env create -f environment.yml
 build dir was already there
+make a directory to auto download pretrained model for modelangelo
+>mkdir /media/dir_for_relion/torch_home
 >cd build
 >cmake ..
 
