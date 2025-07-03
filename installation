@@ -654,3 +654,13 @@ Be sure that your library is in /usr/lib/wsl/lib, to see it you can run
 * relion exits due to not in use for 3600 seconds
 >relion --idle 9999999
 
+*** Installation in ubuntu linux standalone ***
+Restarted machine
+> sudo apt update
+> sudo apt update
+> sudo apt autoremove
+> sudo apt autoclean
+* activate gcc 13
+> cmake -DCMAKE_INSTALL_PREFIX=/home/rkarim/relion_install -DALTCPU=ON -DCUDA_ARCH=86 -DFORCE_OWN_FFTW=ON -DAMDFFTW=ON -DFORCE_OWN_FLTK=ON -DTIFF_LIBRARY=/usr/local/lib/libtiff.so.5 -DTIFF_INCLUDE_DIR=/usr/include -DTORCH_HOME_PATH=/media/rkarim/SATA_HDD/relion_dir/torch_home -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
+=> succeeded installing, but requires path variables because of installation at the custom location
+> export PATH=/home/rkarim/relion_install/bin:$PATH
