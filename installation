@@ -673,3 +673,15 @@ Restarted machine
   Error generating file
   /home/rkarim/relion/build/src/apps/CMakeFiles/relion_gpu_util.dir/__/acc/cuda/./relion_gpu_util_generated_cuda_ml_optimiser.cu.o"
 ?? cuda 12.9 is not compatible with relion!? or requires different cuda toolkit version- 11.8 worked before!
+
+** new install (7/13/2025) on debian Pop_os with Nvidia 5070 ti and 3060 ti
+* installed cmake latest, FFTW latest [run note: cmake was super fast]
+>cmake -DCMAKE_INSTALL_PREFIX=/media/rkarim_pop/SSD_PRO/relion_install \
+-DCUDA=ON -DCUDA_ARCH=86 \
+-DAMDFFTW=ON -DFORCE_OWN_FFTW=ON \
+-DTIFF_LIBRARY=/usr/local/lib/libtiff.so.5 -DTIFF_INCLUDE_DIR=/usr/local/include \
+-DTORCH_HOME_PATH=/media/rkarim_pop/SATA_HD/relion_dir/torch_home \
+-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+-DFORCE_OWN_FLTK=ON ..
+** needed package libxft-dev: sudo apt-get -y install libxft-dev
+=> make successfully compiled
