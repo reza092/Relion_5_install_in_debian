@@ -676,7 +676,7 @@ Restarted machine
 
 ** new install (7/13/2025) on debian Pop_os with Nvidia 5070 ti and 3060 ti
 * installed cmake latest, FFTW latest [run note: cmake was super fast]
->cmake -DCMAKE_INSTALL_PREFIX=/media/rkarim_pop/SSD_PRO/relion_install \
+>cmake -DCMAKE_INSTALL_PREFIX=/media/rkarim_pop/SSD_EVO/relion_install \
 -DCUDA=ON -DCUDA_ARCH=86 \
 -DAMDFFTW=ON -DFORCE_OWN_FFTW=ON \
 -DTIFF_LIBRARY=/usr/local/lib/libtiff.so.5 -DTIFF_INCLUDE_DIR=/usr/local/include \
@@ -684,4 +684,7 @@ Restarted machine
 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 -DFORCE_OWN_FLTK=ON ..
 ** needed package libxft-dev: sudo apt-get -y install libxft-dev
+** sudo apt install libfftw3-double3 libfftw3-dev (double precision FFTW library; took care of local FFTW install)
 => make successfully compiled
+=> make successfully installed
+
