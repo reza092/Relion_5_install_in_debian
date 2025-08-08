@@ -676,10 +676,12 @@ Restarted machine
 
 ** new install (7/13/2025) on debian Pop_os with Nvidia 5070 ti and 3060 ti
 * installed cmake latest, FFTW latest [run note: cmake was super fast]
+* find libtiff.so.5 (library file) and tiffio.h (header file inside the right include foler)
+
 >cmake -DCMAKE_INSTALL_PREFIX=/media/rkarim_pop/SSD_EVO/relion_install \
 -DCUDA=ON -DCUDA_ARCH=86 \
 -DAMDFFTW=ON -DFORCE_OWN_FFTW=ON \
--DTIFF_LIBRARY=/usr/local/lib/libtiff.so.5 -DTIFF_INCLUDE_DIR=/usr/local/include \
+-DTIFF_LIBRARY=/usr/lib/x86_64-linux-gnu/libtiff.so.5 -DTIFF_INCLUDE_DIR=/usr/include/x86_64-linux-gnu \
 -DTORCH_HOME_PATH=/media/rkarim_pop/SATA_HD/relion_dir/torch_home \
 -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 -DFORCE_OWN_FLTK=ON ..
