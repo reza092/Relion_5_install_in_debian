@@ -1,0 +1,11 @@
+> conda env create -f environment_blackwell.yml
+> conda env update -f environment_blackwell.yml
+
+cd relion
+mkdir build
+cd build
+> cmake -DCMAKE_INSTALL_PREFIX=/home/rkarim/relion_install -DDoublePrec_CPU=OFF -DCUDA_ARCH=120 -DAMDFFTW=ON -DFORCE_OWN_FFTW=ON -DTORCH_HOME_PATH=/mnt/SATA_HDD/relion_dir/torch_home ..
+
+> sudo make -j 40
+
+> sudo make install
