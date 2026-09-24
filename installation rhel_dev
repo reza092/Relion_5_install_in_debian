@@ -6,6 +6,9 @@ mkdir build
 cd build
 > cmake -DCMAKE_INSTALL_PREFIX=/home/rkarim/relion_install -DDoublePrec_CPU=OFF -DCUDA_ARCH=120 -DAMDFFTW=ON -DFORCE_OWN_FFTW=ON -DTORCH_HOME_PATH=/mnt/SATA_HDD/relion_dir/torch_home ..
 
+# for mixed blackwell gpu 
+> cmake -DCMAKE_INSTALL_PREFIX=/mnt/scratch/relion_install/relion_src DoublePrec_CPU=OFF DCUDA_ARCH=120 -DCMAKE_CUDA_ARCHITECTURES="89;120" -DCMAKE_CUDA_FLAGS="-gencode arch=compute_89,code=sm_89 -gencode arch=compute_120,code=sm_120 -gencode arch=compute_120,code=compute_120" -DPYTHON_EXE_PATH=~/miniforge3/envs/relion-5.0/bin/python -DAMDFFTW=ON -DFORCE_OWN_FFTW=ON -DTORCH_HOME_PATH=/mnt/scratch/relion_install/torch_home ..
+
 > sudo make -j 40
 
 > sudo make install
