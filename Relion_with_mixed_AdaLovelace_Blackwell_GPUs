@@ -1,0 +1,24 @@
+## RELION 5.0.1 — Mixed NVIDIA GPU Installation Protocol
+
+# 1. Goal
+
+Build a single RELION 5.0.1 binary that contains native CUDA SASS for two different NVIDIA architectures.
+
+Example:
+
+GPU 1: RTX 4090
+Compute capability: 8.9
+SASS: sm_89
+
+GPU 2: RTX PRO 6000 Blackwell
+Compute capability: 12.0
+SASS: sm_120
+
+The final binary should contain:
+
+sm_89.cubin
+sm_120.cubin
+
+and no PTX is required for either GPU.
+
+The existing RELION installation should remain untouched.
