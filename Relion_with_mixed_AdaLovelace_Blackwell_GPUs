@@ -1,4 +1,4 @@
-## RELION 5.0.1 — Mixed NVIDIA GPU Installation Protocol
+''' ## RELION 5.0.1 — Mixed NVIDIA GPU Installation Protocol
 
 # 1. Goal
 
@@ -22,3 +22,35 @@ sm_120.cubin
 and no PTX is required for either GPU.
 
 The existing RELION installation should remain untouched.
+
+2. Verify the GPUs and NVIDIA driver
+
+First:'''
+
+nvidia-smi
+
+Confirm both GPUs are visible.
+
+For example:
+
+RTX 4090
+RTX PRO 6000 Blackwell
+
+Then:
+
+nvidia-smi --query-gpu=name,compute_cap,driver_version --format=csv
+
+If compute_cap is not available on your driver, use NVIDIA's published compute-capability information or 
+verify with CUDA tools.
+
+Also check:
+
+nvidia-smi
+nvcc --version
+
+For the system used in this build:
+
+NVIDIA driver: 595.104.02
+CUDA toolkit: 13.3.73
+
+The important distinction is that nvidia-smi reports the driver's supported CUDA API level, whereas nvcc --version reports the toolkit actually used to compile RELION.
