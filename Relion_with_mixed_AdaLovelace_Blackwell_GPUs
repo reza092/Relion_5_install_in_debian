@@ -1,4 +1,4 @@
-''' ## RELION 5.0.1 — Mixed NVIDIA GPU Installation Protocol
+## RELION 5.0.1 — Mixed NVIDIA GPU Installation Protocol
 
 # 1. Goal
 
@@ -25,7 +25,7 @@ The existing RELION installation should remain untouched.
 
 2. Verify the GPUs and NVIDIA driver
 
-First:'''
+First:
 
 nvidia-smi
 
@@ -54,3 +54,564 @@ NVIDIA driver: 595.104.02
 CUDA toolkit: 13.3.73
 
 The important distinction is that nvidia-smi reports the driver's supported CUDA API level, whereas nvcc --version reports the toolkit actually used to compile RELION.
+
+3. Make sure the CUDA toolkit is the desired one
+
+In our build, CUDA 13.3 was explicitly selected:
+
+export CUDA_HOME=/usr/local/cuda-13.3
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:${LD_LIBRARY_PATH}
+
+Verify:
+
+which nvcc
+nvcc --version
+
+Expected:
+
+/usr/local/cuda-13.3/bin/nvcc
+
+and:
+
+Cuda compilation tools, release 13.3, V13.3.73
+
+RELION 5.0.1 supports CUDA 11–13, although CUDA 13 no longer supports Pascal GPUs.
+
+4. Do NOT activate the RELION conda environment for compilation
+
+This is important.
+
+RELION's own documentation recommends not activating the RELION environment during compilation, because conda-provided compilers/libraries/MPI can interfere with the system toolchain.
+
+For my setup, the existing environment has:
+
+relion-5.0
+
+and I want to create a separate environment:
+
+relion-5.0-mixed
+
+The build itself will be performed from the normal shell/base environment.
+
+Check:
+
+echo $CONDA_DEFAULT_ENV
+
+Do not intentionally activate the environment.
+
+5. Obtain RELION 5.0.1 and Create a separate mixed-GPU environment
+
+Use the RELION 5.0.1 source corresponding to:
+
+commit d476e6f6
+
+For example:
+
+cd /mnt/disk/relion_install
+
+git clone https://github.com/3dem/relion.git relion_mixedGPU
+cd relion_mixedGPU/relion
+
+git checkout d476e6f6
+
+edit the top line of .yaml to replace "relion-5.0" to "relion-5.0-mixed"
+
+conda env create -f environment_blackwell.yml
+conda env update -f environment_blackwell.yml
+
+Then verify:
+
+mamba env list
+
+You should have something like:
+
+relion-5.0
+relion-5.0-mixed
+
+The original environment remains untouched.
+
+Verify:
+
+git rev-parse --short HEAD
+
+Expected:
+
+d476e6f6
+
+RELION 5.0.1 is the maintenance release corresponding to d476e6f
+
+The environment should contain everything needed, verify Python:
+
+/home/where-ever-the-miniforge-is/miniforge3/envs/relion-5.0-mixed/bin/python --version
+
+The important point for this build is that CMake explicitly knows which Python executable to use.
+
+8. Prepare a fresh build directory
+
+Do not build over the existing working RELION installation.
+
+My layout was:
+
+/mnt/disk##/relion_install/
+    relion_89/
+    relion_120/
+    relion_mixedGPU/
+        relion/
+        relion_mixedGPU_src/
+
+Get inside the source tree:
+
+cd /mnt/disk##/relion_install/relion_mixedGPU/relion
+
+rm -rf build
+mkdir build
+cd build
+9. Important RELION CMake modification
+
+This is the critical part.
+
+RELION normally constructs one architecture flag from:
+
+-DCUDA_ARCH=89
+
+which results in something equivalent to:
+
+-arch=sm_89
+
+That is insufficient when one binary must contain multiple native architectures.
+
+The relevant section of CMakeLists.txt originally contains:
+
+set(CUDA_ARCH "" CACHE STRING "CUDA architecture to use")
+if (CUDA_ARCH STREQUAL "")
+    if (${CUDA_VERSION} VERSION_LESS "13.0")
+        message(STATUS "Setting fallback CUDA_ARCH=50 (Pascal)")
+        set(CUDARCH "-arch=sm_50")
+    else()
+        message(STATUS "Setting fallback CUDA_ARCH=75 (Turing)")
+        set(CUDARCH "-arch=sm_75")
+    endif()
+else ()
+    message(STATUS "Using provided CUDA_ARCH=${CUDA_ARCH}")
+    set(CUDARCH "-arch=sm_${CUDA_ARCH}")
+endif ()
+
+Change the three set(CUDARCH...) statements so that CUDARCH is a CMake cache variable:
+
+set(CUDARCH "-arch=sm_50" CACHE STRING "CUDA arch compiler flag override")
+set(CUDARCH "-arch=sm_75" CACHE STRING "CUDA arch compiler flag override")
+set(CUDARCH "-arch=sm_${CUDA_ARCH}" CACHE STRING "CUDA arch compiler flag override")
+
+This allows us to override CUDARCH from the CMake command line.
+
+10. Modify BuildTypes.cmake for CUDA 13.3
+
+The CUDA 13.3 CCCL headers caused this compilation error:
+
+error: unable to find numeric literal operator ‘operator""Q’
+note: use ‘-fext-numeric-literals’ to enable more built-in suffixes
+
+The important detail is that:
+
+-fext-numeric-literals
+
+is a host compiler flag, not a direct NVCC option.
+
+Therefore the correct NVCC syntax is:
+
+-Xcompiler=-fext-numeric-literals
+
+In:
+
+cmake/BuildTypes.cmake
+
+we used:
+
+set(EXTRA_NVCC_FLAGS "-D__INTEL_COMPILER --default-stream per-thread --std=c++17 -Xcompiler=-fext-numeric-literals")
+
+Then:
+
+set(RELION_NVCC_FLAGS "${CUDARCH} ${WARN_DBL} ${EXTRA_NVCC_FLAGS}" CACHE STRING "" FORCE)
+
+The relevant resulting section is:
+
+if(CUDA)
+    set(EXTRA_NVCC_FLAGS "-D__INTEL_COMPILER --default-stream per-thread --std=c++17 -Xcompiler=-fext-numeric-literals")
+    set(RELION_NVCC_FLAGS "${CUDARCH} ${WARN_DBL} ${EXTRA_NVCC_FLAGS}" CACHE STRING "" FORCE)
+endif()
+
+11. Configure CMake with BOTH GPU architectures
+
+For:
+
+RTX 4090      = sm_89
+RTX PRO 6000  = sm_120
+
+we used:
+
+cmake \
+  -DCMAKE_INSTALL_PREFIX=/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src \
+  -DDoublePrec_CPU=OFF \
+  -DCUDA=ON \
+  -DCUDA_ARCH=89 \
+  -DCUDARCH="-gencode=arch=compute_89,code=sm_89 -gencode=arch=compute_120,code=sm_120" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DPYTHON_EXE_PATH=~/miniforge3/envs/relion-5.0/bin/python \
+  -DAMDFFTW=ON \
+  -DFORCE_OWN_FFTW=ON \
+  -DTORCH_HOME_PATH=/mnt/scratch/relion_install/torch_home \
+  ..
+Why are there two architecture options?
+
+This is slightly unusual but intentional.
+
+-DCUDA_ARCH=89
+
+satisfies RELION's own CUDA architecture logic.
+
+The actual multi-architecture NVCC compilation is controlled by:
+
+-DCUDARCH="..."
+
+which produces:
+
+-gencode=arch=compute_89,code=sm_89
+-gencode=arch=compute_120,code=sm_120
+
+The important part is:
+
+code=sm_89
+code=sm_120
+
+rather than merely generating PTX.
+
+12. Verify the CMake cache BEFORE compiling
+
+This step is highly recommended.
+
+Run:
+
+grep -E 'CUDA_ARCH:|CUDARCH:|RELION_NVCC_FLAGS|CUDA_NVCC_FLAGS' CMakeCache.txt
+
+You want the Release flags to contain both:
+
+-gencode=arch=compute_89,code=sm_89
+-gencode=arch=compute_120,code=sm_120
+
+and:
+
+-Xcompiler=-fext-numeric-literals
+
+For example:
+
+RELION_NVCC_FLAGS_RELEASE:STRING=...
+-gencode=arch=compute_89,code=sm_89
+-gencode=arch=compute_120,code=sm_120
+...
+-Xcompiler=-fext-numeric-literals
+...
+Important CMake cache issue
+
+This caused trouble during our build.
+
+CMake generated Release-specific variables that could retain an older set of NVCC flags.
+
+Therefore, if you change BuildTypes.cmake after running CMake, don't assume the Release cache automatically updates.
+
+Check:
+
+grep 'RELION_NVCC_FLAGS_RELEASE' CMakeCache.txt
+grep 'CUDA_NVCC_FLAGS_RELEASE' CMakeCache.txt
+
+If they do not contain:
+
+-Xcompiler=-fext-numeric-literals
+
+and both architectures, correct the cache or, preferably, reconfigure from a clean build directory.
+
+For a reproducible build, the cleanest approach is:
+
+rm -rf build
+mkdir build
+cd build
+
+then rerun CMake.
+
+13. Build RELION
+
+Start conservatively:
+
+make -j1 VERBOSE=1 2>&1 | tee build.log
+
+Once you know the configuration works, you can increase parallelism:
+
+make -jN
+
+where N is appropriate for your CPU/RAM.
+
+The RELION documentation uses the standard CMake → make workflow and recommends checking the CMake output carefully before compilation.
+
+14. Verify that NVCC is actually compiling BOTH architectures
+
+Search the build log:
+
+grep -o -- '-gencode=arch=compute_[0-9]*,code=sm_[0-9]*' build.log | sort -u
+
+You should see:
+
+-gencode=arch=compute_89,code=sm_89
+-gencode=arch=compute_120,code=sm_120
+
+Also:
+
+grep -o -- '-Xcompiler=-fext-numeric-literals' build.log | sort -u
+
+should return:
+
+-Xcompiler=-fext-numeric-literals
+
+15. Build-time SASS verification
+
+Find the CUDA objects:
+
+find . -name '*.cu.o'
+
+Then inspect one:
+
+cuobjdump --list-elf \
+./src/apps/CMakeFiles/relion_gpu_util.dir/__/acc/cuda/relion_gpu_util_generated_cuda_helper_functions.cu.o
+
+You should see:
+
+ELF file 1: ...sm_89.cubin
+ELF file 2: ...sm_120.cubin
+
+For a comprehensive check, inspect every object in:
+
+lib/librelion_gpu_util.a
+
+For example:
+
+cd lib
+
+for obj in $(ar t librelion_gpu_util.a); do
+    ar p librelion_gpu_util.a "$obj" > /tmp/relion_test.o
+    echo "===== $obj ====="
+    cuobjdump --list-elf /tmp/relion_test.o 2>/dev/null |
+        grep -E 'sm_89|sm_120'
+done
+
+Every CUDA object should contain both architectures.
+
+16. Install into a separate prefix
+
+Once the build completes:
+
+make install
+
+The separate installation was:
+
+/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src
+
+This is important because your existing installations remain untouched.
+
+RELION's documentation also recommends using a separate CMAKE_INSTALL_PREFIX when installing to a specific location.
+
+17. Verify the installed version
+
+Run:
+
+/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion --version
+
+Expected:
+
+RELION version: 5.0.1-commit-d476e6
+Precision: BASE=double, CUDA-ACC=single
+
+18. Verify the INSTALLED GPU executable
+
+Do not rely on the GUI relion executable for CUDA verification.
+
+Instead inspect:
+
+cuobjdump --list-elf \
+/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion_refine
+
+For our build, this returned multiple entries containing:
+
+sm_89.cubin
+sm_120.cubin
+
+That is the most important verification.
+
+You can simplify the check:
+
+cuobjdump --list-elf \
+/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion_refine |
+grep -o 'sm_[0-9]*' |
+sort -u
+
+Expected:
+
+sm_120
+sm_89
+
+19. Verify that the executable contains a CUDA fatbin
+
+Run:
+
+readelf -S \
+/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion_refine |
+grep -Ei 'nv_fatbin|cuda|fatbin'
+
+Expected:
+
+.nv_fatbin
+.nvFatBinSegment
+
+This confirms the CUDA device code is embedded in the executable.
+
+20. Verify there is no PTX requirement
+
+Run:
+
+cuobjdump --list-ptx \
+/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion_refine
+
+For the build we completed, the relevant result was empty.
+
+That means the binary has:
+
+native SASS:
+    sm_89
+    sm_120
+
+PTX:
+    none required
+
+This is different from using:
+
+code=compute_89
+
+which would retain PTX for JIT compilation.
+
+21. Create a launcher for the mixed binary
+
+Keep your existing relion89 and relion120 setup untouched.
+
+Add:
+
+export RELION_MIXED_ROOT="/mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src"
+
+relion_mixed () {
+    local prefix="$RELION_MIXED_ROOT"
+
+    PATH=$(printf '%s' "$PATH" |
+        tr ':' '\n' |
+        grep -v "^${RELION_ROOT}/relion_" |
+        paste -sd:)
+
+    export PATH="$prefix/bin:$PATH"
+
+    export CUDA_VISIBLE_DEVICES="$GPU_4090,$GPU_PRO6000"
+
+    echo "relion : $(command -v relion)"
+    echo "refine : $prefix/bin/relion_refine"
+
+    echo "sass   : $(cuobjdump --list-elf "$prefix/bin/relion_refine" 2>/dev/null |
+                    grep -o 'sm_[0-9]*' |
+                    sort -u |
+                    paste -sd,)"
+
+    echo "ptx    : $(cuobjdump --list-ptx "$prefix/bin/relion_refine" 2>/dev/null |
+                    grep -o 'compute_[0-9]*' |
+                    sort -u |
+                    paste -sd,)"
+
+    echo "gpus   : $CUDA_VISIBLE_DEVICES"
+}
+
+Then:
+
+source ~/.bashrc
+
+Run:
+
+relion_mixed
+
+You should see something similar to:
+
+relion : /mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion
+refine : /mnt/scratch/relion_install/relion_mixedGPU/relion_mixedGPU_src/bin/relion_refine
+sass   : sm_120,sm_89
+ptx    :
+gpus   : GPU-4090-UUID,GPU-PRO6000-UUID
+
+22. Test with an actual RELION GPU job
+
+Launch a small 2D classification test.
+
+While it is running:
+
+watch -n 1 nvidia-smi
+
+or:
+
+nvidia-smi
+
+The RELION process should appear on both GPUs.
+
+In your successful test, you obtained approximately:
+
+RTX 4090:
+    22,578 MiB
+    66% GPU utilization
+
+RTX PRO 6000:
+    96,360 MiB
+    68% GPU utilization
+
+with the same:
+
+relion_refine
+
+PID on both GPUs.
+
+That is the final proof that the mixed binary is not merely carrying both architectures—it is actually executing on both GPUs simultaneously.
+
+The key concept
+
+The entire procedure boils down to this:
+
+Normal RELION configuration
+
+-DCUDA_ARCH=89
+        ↓
+-arch=sm_89
+        ↓
+binary optimized for one architecture
+
+Our mixed-GPU configuration
+
+-DCUDA_ARCH=89
+        +
+-DCUDARCH="
+    -gencode=arch=compute_89,code=sm_89
+    -gencode=arch=compute_120,code=sm_120
+"
+        ↓
+single CUDA fatbin
+        ↓
+┌──────────────────────────┐
+│ native sm_89 SASS        │
+│ native sm_120 SASS       │
+└──────────────────────────┘
+        ↓
+one relion_refine binary
+        ↓
+RTX 4090 + RTX PRO 6000
+
+The CUDARCH override is the central trick. The -Xcompiler=-fext-numeric-literals addition is specifically relevant to the CUDA 13.3/CCCL compilation issue we encountered; it should not be blindly added to unrelated CUDA versions if they don't need it.
+
+Also, RELION explicitly warns that CMake caches configuration, so when changing architecture/compiler flags, a clean build directory is the safest reproducible procedure.
